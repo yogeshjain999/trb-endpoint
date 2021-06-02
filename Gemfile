@@ -5,8 +5,4 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in trailblazer-endpoint.gemspec
 gemspec
 
-gem "rake", "~> 13.0"
-
-gem "minitest", "~> 5.0"
-
-gem "rubocop", "~> 1.7"
+gem "trailblazer-activity-dsl-linear", github: "yogeshjain999/trailblazer-activity-dsl-linear", branch: "inherit-supported-wirings"
