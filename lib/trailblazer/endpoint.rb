@@ -118,6 +118,7 @@ module Trailblazer
 
     module Inherited
       def inherited(subclass)
+        super
         subclass.initial_endpoint_setup
       end
     end
