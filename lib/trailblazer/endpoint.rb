@@ -12,7 +12,7 @@ module Trailblazer
     # This exception would be raised at runtime in case they're not implemented.
     class StepNotDefined < RuntimeError
       def initialize(activity_name, step)
-        super("{#{step.inspect}} must be defined in given #{activity_name}.")
+        super("{#{step.inspect}} renderer is not defined in given #{activity_name}.")
       end
     end
 
@@ -25,15 +25,16 @@ module Trailblazer
     end
 
     module InstanceMethods
-      def run_endpoint(activity, controller: default_endpoint_controller, invoke_class: default_invoke_class, **options)
-        signal, (ctx, flow_options) = invoke_class.invoke(
+      def run_endpoint(
+        activity,
+        controller: default_endpoint_controller,
+        invoke_class: default_invoke_class,
+        **options
+      )
+        invoke_class.invoke(
           controller.get_endpoint_for(activity),
           [default_ctx(**options), default_flow_options]
         )
-
-        yield(ctx, **ctx) if block_given?
-
-        [signal, [ctx, flow_options]]
       end
 
       def default_endpoint_controller
@@ -68,10 +69,16 @@ module Trailblazer
     end
 
     module ClassMethods
-      def compile_endpoint(name, domain: name, protocol: default_endpoint_protocol, adapter: default_endpoint_adapter)
-        endpoint = build_endpoint(domain: domain, protocol: protocol, adapter: adapter)
-        set_endpoint_for(name, endpoint)
+      def compile_endpoint(
+        name,
+        domain: name,
+        protocol: default_endpoint_protocol,
+        adapter: default_endpoint_adapter,
+        &success_block
+      )
+        adapter = patch_adapter(adapter, domain: domain, protocol: protocol, &success_block)
 
+        set_endpoint_for(name, adapter)
         DSL.new(self, name, domain: domain, protocol: protocol, adapter: adapter)
       end
 
@@ -89,21 +96,18 @@ module Trailblazer
         @_trailblazer_endpoints = {}
       end
 
-      def build_endpoint(domain:, protocol:, adapter:)
-        Class.new(FastTrack) do
+      def patch_adapter(adapter, domain:, protocol:, &success_block)
+        Class.new(adapter) do
           step Subprocess(
-            adapter,
+            protocol,
             patch: -> {
               step Subprocess(
-                protocol,
-                patch: -> {
-                  step Subprocess(
-                    domain
-                  ), inherit: true, id: :domain, replace: :domain
-                }
-              ), inherit: true, id: :protocol, replace: :protocol
+                domain
+              ), inherit: true, id: :domain, replace: :domain
             }
-          ), id: :adapter, fast_track: true
+          ), inherit: true, id: :protocol, replace: :protocol
+
+          step success_block, id: :success, replace: :success, inherit: true if success_block
         end
       end
 

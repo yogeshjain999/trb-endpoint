@@ -33,7 +33,7 @@ class Trailblazer::EndpointTest < Minitest::Spec
   it "new: success" do
     signal, (ctx, _) = controller.new
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:success>"
     assert_equal controller.status, :success
     assert_equal controller.message, "success from DSL"
     assert_equal ctx[:domain_ctx][:model], User.new
@@ -42,7 +42,7 @@ class Trailblazer::EndpointTest < Minitest::Spec
   it "new: unauthorized" do
     signal, _ = invalid_controller.new
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:unauthorized>"
     assert_equal invalid_controller.status, :unauthorized
     assert_equal invalid_controller.message, "unauthorized from DSL"
   end
@@ -51,14 +51,14 @@ class Trailblazer::EndpointTest < Minitest::Spec
     controller = AdminsController.new(nil)
     signal, _ = controller.create
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:unauthenticated>"
     assert_equal controller.status, :unauthenticated
   end
 
   it "create: unauthorized" do
     signal, (ctx, flow_options) = invalid_controller.create
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:unauthorized>"
     assert_equal invalid_controller.status, :unauthorized
     assert_equal invalid_controller.message, "2 isn't allowed access!"
 
@@ -76,7 +76,7 @@ class Trailblazer::EndpointTest < Minitest::Spec
     controller.params = { id: 1, role: nil }
     signal, (ctx, _) = controller.create
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:invalid_data>"
     assert_equal controller.status, :invalid_data
     assert_equal controller.message, ["Role must be filled"]
 
@@ -91,7 +91,7 @@ class Trailblazer::EndpointTest < Minitest::Spec
     controller.params = { id: 1, role: "admin" }
     signal, (ctx, _) = controller.create
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:success>"
     assert_equal controller.status, :success
 
     assert_equal ctx[:domain_ctx][:model], User.new
@@ -106,7 +106,7 @@ class Trailblazer::EndpointTest < Minitest::Spec
     signal, (ctx, _) = controller.update
     assert_equal controller.status, :not_found
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:not_found>"
     assert_equal ctx[:domain_ctx][:params], { id: 2 }
     assert_nil ctx[:domain_ctx][:model]
   end
@@ -116,7 +116,7 @@ class Trailblazer::EndpointTest < Minitest::Spec
     signal, (ctx, _) = controller.update
     assert_equal controller.status, :unauthorized
 
-    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:pass_fast>"
+    assert_equal signal.inspect, "#<Trailblazer::Activity::End semantic=:unauthorized>"
     assert_equal ctx[:domain_ctx][:params], { id: 3 }
     assert_equal ctx[:domain_ctx][:model], User.new(3, "admin")
   end

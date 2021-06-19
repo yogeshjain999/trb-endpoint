@@ -1,7 +1,8 @@
 module Trailblazer
   module Endpoint
-    # Basic domain template activity which registers emittable {ends}
-    # which will be inherited in actual domain activity.
+    # Template for defining domain's emittable {End}.
+    # Upon replacing this activity with actual domain inside {Protocol},
+    # all {End}s will get inherited.
     class DomainTemplate < FastTrack
       NOOP = ->(*) { true }
 
@@ -11,6 +12,17 @@ module Trailblazer
     end
 
     class Protocol < FastTrack
+      OUTPUTS = %i[success failure unauthenticated not_found unauthorized invalid_data]
+
+      BINARY_OUTPUTS = {
+        :success          => :success,
+        :failure          => :failure,
+        :unauthenticated  => :failure,
+        :not_found        => :failure,
+        :unauthorized     => :failure,
+        :invalid_data     => :failure
+      }
+
       step :authenticate,
         input: :authenticate_input,
         Output(:failure) => End(:unauthenticated)
@@ -53,7 +65,35 @@ module Trailblazer
         def authorize(*)
           raise StepNotDefined.new("Protocol", __callee__)
         end
+      end # WithAuthorization
+    end # Protocol
+
+    module ClassMethods
+      def Protocol(activity:, outputs:)
+        options = activity.Subprocess(activity)
+        options = options.merge(output: method(:protocol_output))
+
+        options.merge(
+          protocol_connections(activity, outputs)
+        )
+      end
+
+      private
+
+      # Make both `domain_ctx` and `endpoint_ctx` available as `ctx` in adapter renderers.
+      def protocol_output(ctx, endpoint_ctx:, domain_ctx:, **)
+        ctx.merge(endpoint_ctx).merge(domain_ctx)
+      end
+
+      def protocol_connections(activity, outputs)
+        Hash[
+          outputs.collect do |semantic, color = semantic|
+            [activity.Output(semantic), activity.Track(color)]
+          end
+        ]
       end
     end
+
+    extend ClassMethods
   end
 end
