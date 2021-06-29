@@ -19,11 +19,12 @@ module Twitter
     end
 
     desc 'Destroy a status.'
-    compile_endpoint(Status::Operation::Destroy) do |_ctx, api:, **|
-      api.body("Binary Success")
-    end.Or do |_ctx, api:, **|
-      api.error!("Binary Failure", 422)
-    end
+    compile_endpoint(Status::Operation::Destroy).
+      output(:success) do |_ctx, api:, **|
+        api.body("Binary Success")
+      end.Or do |_ctx, api:, **|
+        api.error!("Binary Failure", 422)
+      end
 
     delete do
       run_endpoint Status::Operation::Destroy, domain_ctx: { representer_class: Status::Representer::Show }

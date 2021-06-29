@@ -1,6 +1,8 @@
+require "trailblazer/activity/dsl/linear"
+
 module Trailblazer
   module Endpoint
-    class Adapter < FastTrack
+    class Adapter < Trailblazer::Activity::FastTrack
       step Endpoint::Protocol(
         activity: Protocol,
         outputs: Protocol::OUTPUTS

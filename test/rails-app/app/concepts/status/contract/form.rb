@@ -1,7 +1,7 @@
 require "reform/form/dry"
 
 module Status::Contract
-  class Create < Reform::Form
+  class Form < Reform::Form
     feature Reform::Form::Dry
 
     property :id

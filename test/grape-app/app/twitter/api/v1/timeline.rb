@@ -5,17 +5,6 @@ module Twitter
     compile_endpoint :public, domain: Timeline::Operation::Public, protocol: API::Endpoint::Protocol::NoAuth
     compile_endpoint :home,   domain: Timeline::Operation::Personal
 
-    helpers do
-      # Custom domain options to be passed in all the endpoints
-      # defined under this API only.
-      def default_domain_ctx
-        {
-          params: params,
-          representer_class: Timeline::Representer::Index
-        }
-      end
-    end
-
     desc 'Return a public timeline.'
     get(:public) do
       run_endpoint(:public)
@@ -24,6 +13,15 @@ module Twitter
     desc 'Return a personal timeline.'
     get(:home) do
       run_endpoint(:home)
+    end
+
+    # Custom domain options to be passed in all the endpoints
+    # defined under this API only.
+    directive :domain_ctx do
+      {
+        params: params,
+        representer_class: Timeline::Representer::Index
+      }
     end
   end
 end

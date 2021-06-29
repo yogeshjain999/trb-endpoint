@@ -10,11 +10,9 @@ class TimelineController < ApplicationController
     run_endpoint(:home)
   end
 
-  private
-
   # Custom domain options to be passed in all the endpoints
   # defined under this API only.
-  def default_domain_ctx
+  directive :domain_ctx do
     {
       params: params,
       representer_class: Timeline::Representer::Index

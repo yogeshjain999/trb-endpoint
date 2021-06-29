@@ -1,33 +1,15 @@
 class ApplicationController < ActionController::Base
-  include Trailblazer::Endpoint
+  include Trailblazer::Endpoint::Rails
 
-  class << self
-    def default_endpoint_adapter
-      ApplicationAdapter
-    end
+  directives adapter: ApplicationAdapter, protocol: ApplicationProtocol
 
-    def default_endpoint_protocol
-      ApplicationProtocol
-    end
-  end
+  # Default caller to call on all the operations
+  directive :invoke_class, Trailblazer::Developer::Wtf
 
-  def default_endpoint_ctx
-    {
-      controller: self,
-    }
-  end
+  directive :endpoint_ctx, ->(*) { Hash(controller: self) }
+  directive :domain_ctx, ->(*) { Hash(params: params) }
 
-  def default_domain_ctx
-    {
-      params: params
-    }
-  end
-
-  def default_invoke_class
-    Trailblazer::Developer::Wtf
-  end
-
-  def default_flow_options
+  directive :flow_options do
     {
       context_options: {
         aliases: { 'contract.default': :contract, 'policy.default': :policy },

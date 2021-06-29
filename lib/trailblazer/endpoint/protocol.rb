@@ -1,9 +1,11 @@
+require "trailblazer/activity/dsl/linear"
+
 module Trailblazer
   module Endpoint
     # Template for defining domain's emittable {End}.
     # Upon replacing this activity with actual domain inside {Protocol},
     # all {End}s will get inherited.
-    class DomainTemplate < FastTrack
+    class DomainTemplate < Trailblazer::Activity::FastTrack
       NOOP = ->(*) { true }
 
       step NOOP, id: :model,    Output(:failure) => End(:not_found)
@@ -11,7 +13,7 @@ module Trailblazer
       step NOOP, id: :contract, Output(:failure) => End(:invalid_data)
     end
 
-    class Protocol < FastTrack
+    class Protocol < Trailblazer::Activity::FastTrack
       OUTPUTS = %i[success failure unauthenticated not_found unauthorized invalid_data]
 
       BINARY_OUTPUTS = {
