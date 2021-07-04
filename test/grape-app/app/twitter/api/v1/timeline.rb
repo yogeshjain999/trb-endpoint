@@ -1,9 +1,7 @@
 module Twitter
-  class API::V1::Timeline < Grape::API
-    include API::Endpoint::Defaults
-
-    compile_endpoint :public, domain: Timeline::Operation::Public, protocol: API::Endpoint::Protocol::NoAuth
-    compile_endpoint :home,   domain: Timeline::Operation::Personal
+  class API::V1::Timeline < API::V1
+    compile_endpoint :public, domain: ::Timeline::Operation::Public, protocol: API::Endpoint::Protocol::NoAuth
+    compile_endpoint :home,   domain: ::Timeline::Operation::Personal
 
     desc 'Return a public timeline.'
     get(:public) do
@@ -20,7 +18,7 @@ module Twitter
     directive :domain_ctx do
       {
         params: params,
-        representer_class: Timeline::Representer::Index
+        representer_class: ::Timeline::Representer::Index
       }
     end
   end
