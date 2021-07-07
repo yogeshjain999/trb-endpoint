@@ -38,6 +38,14 @@ module Trailblazer
         @_trailblazer_directives.fetch(name)
       end
 
+      module Inherited
+        def inherited(subclass)
+          super
+
+          subclass.instance_variable_set(:@_trailblazer_directives, @_trailblazer_directives.dup)
+        end
+      end
+
       def Option(value)
         Option.build(value)
       end

@@ -45,6 +45,14 @@ module Trailblazer
       def get_endpoint_for(name)
         @_trailblazer_endpoints.fetch(name)
       end
+
+      module Inherited
+        def inherited(subclass)
+          super
+
+          subclass.instance_variable_set(:@_trailblazer_endpoints, @_trailblazer_endpoints.dup)
+        end
+      end
     end
   end
 end
